@@ -17,6 +17,7 @@ from model import count_params, grad_cam, load_checkpoint, overlay_heatmap, pred
 # ─────────────────────────── Konfigurasi ───────────────────────────
 APP_DIR = Path(__file__).parent
 DEFAULT_WEIGHTS = APP_DIR / "flower_cnn.pth"
+SAMPLES_DIR = APP_DIR / "assets" / "samples"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 st.set_page_config(page_title="Flora · Pengenal Bunga", page_icon="🌸", layout="wide",
@@ -229,13 +230,29 @@ torch.save({
 
     # ─────────────────────────── Tab 1: satu foto ───────────────────────────
     with tab_one:
-        src = st.radio("Sumber foto", ["Unggah", "Tempel (Ctrl+V)", "Kamera"], horizontal=True,
+        src = st.radio("Sumber foto", ["Unggah", "Tempel (Ctrl+V)", "Kamera", "Contoh foto"], horizontal=True,
                        label_visibility="collapsed")
         st.markdown(PHOTO_GUIDE, unsafe_allow_html=True)
         if src == "Unggah":
             file = st.file_uploader("Pilih foto bunga", type=["jpg", "jpeg", "png", "webp"], key="single")
         elif src == "Kamera":
             file = st.camera_input("Ambil foto bunga")
+        elif src == "Contoh foto":
+            st.markdown('<div class="paste-hint">Foto berikut diambil dari data uji, yaitu foto yang tidak digunakan '
+                        'saat melatih model. Pilih salah satu untuk mencobanya.</div>', unsafe_allow_html=True)
+            samples = sorted(SAMPLES_DIR.glob("*.jpg"))
+            for row in range(0, len(samples), 5):
+                cols = st.columns(5, gap="small")
+                for col, pth in zip(cols, samples[row:row + 5]):
+                    with col:
+                        st.image(str(pth), use_container_width=True)
+                        if st.button("Coba foto ini", key=f"sample_{pth.stem}", use_container_width=True):
+                            st.session_state.sample = str(pth)
+            file = None
+            if st.session_state.get("sample"):
+                pth = Path(st.session_state.sample)
+                file = io.BytesIO(pth.read_bytes())
+                file.name, file.size = f"contoh_{pth.stem}.jpg", pth.stat().st_size
         else:
             st.markdown('<div class="paste-hint">Salin foto terlebih dahulu (dari situs web, aplikasi pesan, atau tangkapan layar), klik kotak di bawah, '
                         'tekan <kbd>Ctrl</kbd>+<kbd>V</kbd>, kemudian tekan <kbd>Enter</kbd>.</div>', unsafe_allow_html=True)
@@ -302,6 +319,11 @@ torch.save({
                                 unsafe_allow_html=True)
 
                 st.plotly_chart(prob_chart(probs, classes), use_container_width=True, config={"displayModeBar": False})
+                if label in FLOWERS:
+                    st.markdown(f'<a class="care-link" href="./?bunga={label}" target="_self" style="--c:{c}">'
+                                f'<span>Lihat cara merawat {LOCAL_NAME.get(label, label).lower()}</span>'
+                                f'<small>Penyiraman, pemupukan, pemangkasan, dan hama</small></a>',
+                                unsafe_allow_html=True)
                 st.caption(f"{img.width}×{img.height}px · diproses dalam {ms:.0f} ms" + (" dengan TTA" if use_tta else ""))
                 with st.expander("Kapan hasilnya bisa meleset?"):
                     st.markdown("Model dilatih dari ±3.600 foto: foto kebun asli ditambah foto beragam dari iNaturalist, Oxford 102 Flowers, "
@@ -510,6 +532,28 @@ st.markdown(f"""
 .funfact {{ margin-top:.9rem; border-radius:20px; padding:1.1rem 1.4rem; background:linear-gradient(120deg, white, transparent);
   border:1px dashed var(--c); }}
 .funfact b {{ display:block; font-family:'Fraunces',serif; font-size:1.05rem; margin-bottom:.25rem; color:var(--c); }}
+.care-link {{ display:flex; flex-direction:column; gap:.1rem; margin-top:.6rem; padding:.9rem 1.2rem; border-radius:16px;
+  background:white; border:1px solid {LINE}; text-decoration:none !important; color:{INK} !important;
+  transition: border-color .2s ease, transform .2s ease; }}
+.care-link:hover {{ border-color:var(--c); transform: translateY(-1px); }}
+.care-link span {{ font-weight:600; color:var(--c); }}
+.care-link small {{ color:{MUTED}; }}
+.flow {{ display:grid; grid-template-columns: repeat(6, 1fr); gap:.6rem; margin:1rem 0 2rem; }}
+.flow-step {{ background:white; border-radius:16px; padding:.9rem .9rem 1rem; position:relative; display:flex;
+  flex-direction:column; gap:.3rem; }}
+.flow-step .n {{ width:24px; height:24px; border-radius:12px 12px 12px 3px; background:{LEAF}; color:white;
+  font-size:.8rem; font-weight:600; display:grid; place-items:center; }}
+.flow-step b {{ font-family:'Fraunces',serif; font-size:1.02rem; }}
+.flow-step span {{ color:{MUTED}; font-size:.84rem; line-height:1.45; flex:1; }}
+.flow-step code {{ background:#EEF1ED; color:{LEAF}; border-radius:6px; padding:.1rem .4rem; font-size:.78rem; width:fit-content; }}
+.flow-step:not(:last-child)::after {{ content:""; position:absolute; right:-.45rem; top:50%; width:.3rem; height:.3rem;
+  border-top:2px solid #B9C6B8; border-right:2px solid #B9C6B8; transform: translateY(-50%) rotate(45deg); }}
+@media (max-width: 900px) {{ .flow {{ grid-template-columns: repeat(2, 1fr); }} .flow-step::after {{ display:none; }} }}
+.note-soft {{ color:{MUTED}; font-size:.92rem; line-height:1.6; max-width:75ch; margin:.3rem 0 1.6rem; }}
+.lessons {{ display:grid; grid-template-columns: repeat(3, 1fr); gap:.8rem; margin-top:.4rem; }}
+.lessons > div {{ background:white; border-radius:18px; padding:1.1rem 1.2rem; line-height:1.6; font-size:.93rem; }}
+.lessons b {{ display:block; font-family:'Fraunces',serif; font-size:1.08rem; margin-bottom:.35rem; color:{INK}; }}
+@media (max-width: 900px) {{ .lessons {{ grid-template-columns: 1fr; }} }}
 .more-h {{ font-family:'Fraunces',serif; font-size:1.4rem; margin:2.6rem 0 .8rem; }}
 @media (max-width: 700px) {{
   .care-row {{ grid-template-columns:1fr; gap:.4rem; }}
@@ -586,6 +630,107 @@ def page_catalog():
         render_home()
 
 
+
+
+# ─────────────────────────── Cara kerja model ───────────────────────────
+ACC_STORY = [  # (nama model, data, akurasi data uji, akurasi foto dunia nyata)
+    ("Model awal", "1.400 foto kebun", 98.1, 53.5),
+    ("+ Oxford & TF", "±2.000 foto", 93.7, 49.0),
+    ("Model final", "±3.600 foto, 50 epoch", 84.8, 69.4),
+]
+
+
+def _first_layer_maps(model, img, n=8):
+    """Peta aktivasi lapisan konvolusi pertama: apa yang 'dilihat' model di tahap awal."""
+    import torch.nn.functional as F_
+    from model import transform_eval
+    with torch.no_grad():
+        x = transform_eval(img.convert("RGB")).unsqueeze(0)
+        a = F_.relu(model.bn1(model.conv1(x)))[0]
+    energy = a.mean(dim=(1, 2))
+    idx = torch.argsort(energy, descending=True)[:n]
+    maps = []
+    for i in idx:
+        m = a[i].numpy()
+        m = (m - m.min()) / (m.max() - m.min() + 1e-8)
+        maps.append(Image.fromarray(np.uint8(m * 255)).resize((160, 160), Image.NEAREST))
+    return maps
+
+
+def page_howto():
+    st.markdown("## Cara kerja model")
+    st.markdown('<div class="lede">Flora memakai jaringan saraf konvolusi (CNN) yang dibangun dan dilatih sendiri. '
+                'Berikut perjalanan sebuah foto hingga menjadi tebakan nama bunga.</div>', unsafe_allow_html=True)
+
+    steps = [
+        ("Foto masuk", "Diperkecil ke 128×128 piksel lalu dinormalisasi.", "3 × 128 × 128"),
+        ("Konvolusi 1", "32 filter 3×3 mengenali tepi dan bercak warna.", "32 × 64 × 64"),
+        ("Konvolusi 2", "64 filter mengenali tekstur dan pola kelopak.", "64 × 32 × 32"),
+        ("Konvolusi 3", "128 filter mengenali bentuk bagian bunga.", "128 × 16 × 16"),
+        ("Lapisan dense", "512 neuron menggabungkan semua ciri; dropout 50% mencegah hafalan.", "512"),
+        ("Keputusan", "Softmax mengubah skor menjadi peluang untuk 5 jenis bunga.", "5"),
+    ]
+    st.markdown('<div class="flow">' + "".join(
+        f'<div class="flow-step"><div class="n">{i}</div><b>{t}</b><span>{d}</span><code>{shape}</code></div>'
+        for i, (t, d, shape) in enumerate(steps, 1)) + "</div>", unsafe_allow_html=True)
+
+    model = classes = None
+    try:
+        if DEFAULT_WEIGHTS.exists():
+            stt = DEFAULT_WEIGHTS.stat()
+            model, classes, _ = get_model(None, str(DEFAULT_WEIGHTS), f"{stt.st_size}-{stt.st_mtime_ns}")
+    except Exception:  # noqa: BLE001
+        model = None
+
+    samples = sorted(SAMPLES_DIR.glob("*.jpg"))
+    if model is not None and samples:
+        st.markdown("### Apa yang diperhatikan model?")
+        names = {LOCAL_NAME.get(p.stem.split("_")[0], p.stem): p for p in samples if p.stem.endswith("_1")}
+        pick = st.segmented_control("Pilih contoh foto", list(names), default=list(names)[0],
+                                    label_visibility="collapsed")
+        img = Image.open(names[pick or list(names)[0]]).convert("RGB")
+        probs = predict(model, img, tta=True)
+        top = int(np.argmax(probs))
+        a, b, c3 = st.columns(3, gap="medium")
+        a.image(img, caption="Foto asli", use_container_width=True)
+        b.image(overlay_heatmap(img, grad_cam(model, img, top)), use_container_width=True,
+                caption=f"Area fokus (Grad-CAM) → {classes[top]} {probs[top]*100:.0f}%")
+        with c3:
+            maps = _first_layer_maps(model, img)
+            grid = Image.new("L", (4 * 160, 2 * 160))
+            for i, m in enumerate(maps):
+                grid.paste(m, ((i % 4) * 160, (i // 4) * 160))
+            st.image(grid, use_container_width=True, caption="8 peta aktivasi dari konvolusi pertama")
+        st.markdown('<div class="note-soft">Grad-CAM menyorot bagian foto yang paling memengaruhi keputusan. '
+                    'Peta aktivasi menunjukkan bahwa lapisan awal masih menangkap hal sederhana seperti tepi, '
+                    'terang-gelap, dan bercak warna. Lapisan yang lebih dalam menyusunnya menjadi bentuk kelopak.</div>',
+                    unsafe_allow_html=True)
+
+    st.markdown("### Pelajaran dari data")
+    fig = go.Figure()
+    labels = [f"{n}<br><span style='font-size:11px'>{d}</span>" for n, d, _, _ in ACC_STORY]
+    fig.add_trace(go.Bar(name="Data uji (mirip data latih)", x=labels, y=[t for *_, t, _ in ACC_STORY],
+                         marker=dict(color="#B9C6B8", cornerradius=6),
+                         text=[f"{t:.1f}%" for *_, t, _ in ACC_STORY], textposition="outside"))
+    fig.add_trace(go.Bar(name="Foto dunia nyata (iNaturalist)", x=labels, y=[r for *_, r in ACC_STORY],
+                         marker=dict(color=LEAF, cornerradius=6),
+                         text=[f"{r:.1f}%" for *_, r in ACC_STORY], textposition="outside"))
+    fig.update_layout(barmode="group", height=340, margin=dict(l=0, r=0, t=10, b=0), bargap=.35,
+                      plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+                      font=dict(family="Plus Jakarta Sans", color=INK), yaxis=dict(range=[0, 110], visible=False),
+                      legend=dict(orientation="h", y=1.12, x=0))
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.markdown("""
+<div class="lessons">
+  <div><b>Akurasi tinggi belum tentu pintar</b>Model awal benar 98% pada data uji, tetapi hanya 53% pada foto dari
+  luar dataset. Data uji berasal dari kebun dan kamera yang sama dengan data latih, sehingga model cukup
+  menghafal latar dan warna (<i>shortcut learning</i>).</div>
+  <div><b>Contohnya mawar putih</b>Krisan di dataset awal hampir semuanya putih, sedangkan mawarnya merah.
+  Akibatnya, model menebak setiap bunga putih sebagai krisan. Grad-CAM menunjukkan model justru memperhatikan latar.</div>
+  <div><b>Data yang beragam lebih penting</b>Setelah ditambah ±2.200 foto dari iNaturalist, Oxford 102 Flowers,
+  dan TensorFlow flower_photos, akurasi data uji turun karena ujiannya lebih sulit, tetapi akurasi pada foto
+  dunia nyata naik dari 53% menjadi 69%.</div>
+</div>""", unsafe_allow_html=True)
 
 # ─────────────────────────── Panduan foto ───────────────────────────
 def _frame(good: bool) -> str:
@@ -688,17 +833,19 @@ st.markdown(_sprig("left") + _sprig("right"), unsafe_allow_html=True)
 PAGES = {
     "katalog": st.Page(page_catalog, title="Katalog bunga", url_path="katalog", default=True),
     "kenali": st.Page(page_identify, title="Kenali dari foto", url_path="kenali"),
+    "cara": st.Page(page_howto, title="Cara kerja", url_path="cara-kerja"),
 }
 nav = st.navigation(list(PAGES.values()), position="hidden")
 
 st.markdown("""<style>
 .st-key-topnav { gap:.25rem; background:rgba(255,255,255,.55); border:1px solid #DCE3DB; padding:.3rem;
-  border-radius:999px; width:fit-content; margin-left:auto; backdrop-filter: blur(6px); }
+  border-radius:999px; width:fit-content; margin-left:auto; backdrop-filter: blur(6px); flex-wrap:nowrap !important; }
 .st-key-topnav [data-testid="stPageLink"] a { border-radius:999px 999px 999px 4px; padding:.3rem 1rem .3rem .8rem;
   transition: background .2s ease; }
 .st-key-topnav [data-testid="stPageLink"] a:hover { background:rgba(47,93,70,.07); }
 .st-key-topnav [data-testid="stPageLink"] a:focus-visible { outline:2px solid #2F5D46; outline-offset:2px; }
 .st-key-topnav p { font-weight:500; color:#4A5A50; }
+@media (max-width: 700px) { .st-key-topnav { flex-wrap:wrap !important; border-radius:18px; margin-left:0; } }
 .st-key-topnav [data-testid="stIconMaterial"], .st-key-topnav span[data-testid*="Icon"] { color:#7A8C80; }
 
 .paste-hint { color:#66746B; font-size:.92rem; margin:.1rem 0 .5rem; }
@@ -716,7 +863,7 @@ st.markdown("""<style>
 @media (prefers-reduced-motion: reduce) { .sprig { animation:none; } }
 </style>""", unsafe_allow_html=True)
 
-b, n = st.columns([1.3, 1], vertical_alignment="center")
+b, n = st.columns([1, 1.25], vertical_alignment="center")
 b.markdown(
     '<div class="brand"><div class="logo">Flora</div><span>Katalog bunga dan cara merawatnya</span></div>'
     '<div class="petals" style="margin-bottom:0">' + "".join(f'<i style="background:{c}"></i>' for c in PETAL.values()) + "</div>",
@@ -724,7 +871,8 @@ b.markdown(
 with n.container(horizontal=True, key="topnav"):
     st.page_link(PAGES["katalog"], label="Katalog bunga", icon=":material/local_florist:")
     st.page_link(PAGES["kenali"], label="Kenali dari foto", icon=":material/photo_camera:")
-_active = 2 if getattr(nav, "url_path", "") == "kenali" else 1
+    st.page_link(PAGES["cara"], label="Cara kerja", icon=":material/psychology:")
+_active = {"kenali": 2, "cara-kerja": 3}.get(getattr(nav, "url_path", ""), 1)
 st.markdown(f"<style>.st-key-topnav > div:nth-child({_active}) a {{ background:white; "
             f"box-shadow:0 1px 3px rgba(30,43,36,.10); }} .st-key-topnav > div:nth-child({_active}) a * "
             f"{{ color:{LEAF} !important; }}</style>", unsafe_allow_html=True)
