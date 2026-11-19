@@ -179,7 +179,7 @@ def _dots(n, r, rad, fill, offset=0):
         f'cy="{100 + r*math.sin(math.radians(360/n*i+offset)):.1f}" r="{rad}" fill="{fill}"/>' for i in range(n))
 
 
-def illustration(name: str) -> str:
+def illustration(name: str, bare: bool = False) -> str:
     c = FLOWERS[name]["color"]
     leaves = ('<ellipse cx="52" cy="160" rx="34" ry="13" fill="#5E8C6A" transform="rotate(-35 52 160)"/>'
               '<ellipse cx="150" cy="166" rx="30" ry="11" fill="#4C7A5A" transform="rotate(30 150 166)"/>')
@@ -206,5 +206,64 @@ def illustration(name: str) -> str:
                 '<circle cx="100" cy="100" r="26" fill="#A11C31"/>'
                 '<path d="M100 100 m-4 0 a4 4 0 1 1 8 0 a9 9 0 1 1 -16 0 a14 14 0 1 1 26 2 a19 19 0 1 1 -34 -4" '
                 'stroke="#7A1022" stroke-width="3" fill="none" stroke-linecap="round"/>')
+    if bare:  # tanpa kotak latar & daun, untuk hiasan samar
+        return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">{body}</svg>'
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'
             f'<rect width="200" height="200" fill="{c}" fill-opacity=".13"/>{leaves}{body}</svg>')
+
+
+# ───────────── Suasana halaman detail tiap bunga ─────────────
+# bg: warna cahaya latar; shades: warna kelopak melayang; shape: bentuk kelopak; mood & fact: teks pendek
+THEME = {
+    "Chrysanthemum": {
+        "bg": "#FBF0D2", "shades": ["#E9B93A", "#D9A21B", "#F3D57A"], "shape": "thin",
+        "mood": "Hangat dan tenang, seperti sore di dataran tinggi.",
+        "fact": "Di Asia Timur, krisan melambangkan umur panjang. Di Jepang, krisan menjadi lambang kekaisaran.",
+    },
+    "Hibiscus": {
+        "bg": "#FADDE6", "shades": ["#C8305F", "#E2577F", "#F3C64B"], "shape": "round",
+        "mood": "Cerah dan tropis, penuh cahaya matahari.",
+        "fact": "Di Malaysia, kembang sepatu dikenal sebagai bunga raya dan ditetapkan sebagai bunga nasional.",
+    },
+    "Marigold": {
+        "bg": "#FCE6CF", "shades": ["#E8701A", "#F29B38", "#F5C04A"], "shape": "dot",
+        "mood": "Meriah dan bersahaja, akrab dengan upacara dan persembahan.",
+        "fact": "Di Bali, gemitir menjadi salah satu bunga utama dalam canang sari untuk persembahan sehari-hari.",
+    },
+    "Petuniya": {
+        "bg": "#ECE3F7", "shades": ["#7A4CB5", "#A57FD6", "#E07BB0"], "shape": "soft",
+        "mood": "Lembut dan sejuk, seperti taman di senja hari.",
+        "fact": "Nama petunia berasal dari kata petun, sebutan tembakau dalam bahasa Tupi-Guarani. "
+                "Petunia dan tembakau memang masih satu famili, Solanaceae.",
+    },
+    "Rose": {
+        "bg": "#F7DEE2", "shades": ["#B8233A", "#D9536A", "#F0A3B0"], "shape": "petal",
+        "mood": "Anggun dan romantis, dengan kelopak yang berlapis.",
+        "fact": "Mawar telah dibudidayakan manusia selama ribuan tahun, dan kini terdapat puluhan ribu kultivar.",
+    },
+}
+
+_SHAPES = {
+    "thin":  "width:7px !important; height:24px !important; border-radius:50% !important;",
+    "round": "width:24px !important; height:21px !important; border-radius:50% 50% 46% 46% !important;",
+    "dot":   "width:11px !important; height:11px !important; border-radius:50% !important;",
+    "soft":  "width:19px !important; height:17px !important; border-radius:55% 55% 50% 12% !important;",
+    "petal": "width:22px !important; height:15px !important; border-radius:100% 0 100% 0 !important;",
+}
+
+
+def theme_css(name: str, paper: str) -> str:
+    t = THEME[name]
+    s1, s2, s3 = t["shades"]
+    return f"""<style>
+.stApp {{ background:
+  radial-gradient(900px 520px at 88% 6%, {t['bg']} 0%, transparent 70%),
+  radial-gradient(700px 520px at 0% 100%, {t['bg']}AA 0%, transparent 65%), {paper} !important; }}
+.petal-sky i {{ {_SHAPES[t['shape']]} opacity:.30 !important; }}
+.petal-sky i:nth-child(3n+1) {{ background:{s1} !important; }}
+.petal-sky i:nth-child(3n+2) {{ background:{s2} !important; }}
+.petal-sky i:nth-child(3n)   {{ background:{s3} !important; }}
+.sprig ellipse {{ stroke:{s1} !important; fill:{s1} !important; }}
+.sprig circle {{ fill:{s2} !important; }}
+.hero-img {{ box-shadow: 0 24px 60px -24px {s1}99; }}
+</style>"""

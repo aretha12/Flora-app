@@ -1,3 +1,4 @@
+import base64
 import io
 import time
 from datetime import datetime
@@ -10,7 +11,7 @@ import streamlit as st
 import torch
 from PIL import Image, ImageOps
 
-from flowers import FLOWERS, ORDER, photo_data_uri
+from flowers import FLOWERS, ORDER, THEME, illustration, photo_data_uri, theme_css
 from model import count_params, grad_cam, load_checkpoint, overlay_heatmap, predict
 
 # ─────────────────────────── Konfigurasi ───────────────────────────
@@ -236,8 +237,8 @@ torch.save({
         elif src == "Kamera":
             file = st.camera_input("Ambil foto bunga")
         else:
-            st.markdown('<div class="paste-hint">Salin foto (dari web, chat, atau screenshot), klik kotak di bawah, '
-                        'tekan <kbd>Ctrl</kbd>+<kbd>V</kbd>, lalu tekan <kbd>Enter</kbd>.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="paste-hint">Salin foto terlebih dahulu (dari situs web, aplikasi pesan, atau tangkapan layar), klik kotak di bawah, '
+                        'tekan <kbd>Ctrl</kbd>+<kbd>V</kbd>, kemudian tekan <kbd>Enter</kbd>.</div>', unsafe_allow_html=True)
             with st.container(key="pastebox"):
                 pasted = st.chat_input("Klik di sini, lalu Ctrl+V untuk menempel foto", key="paste",
                                        accept_file=True, file_type=["jpg", "jpeg", "png", "webp"])
@@ -498,6 +499,17 @@ st.markdown(f"""
 .care-row p {{ margin:0; line-height:1.7; max-width:68ch; }}
 .tipbox {{ margin-top:1.4rem; background:white; border-radius:20px; padding:1.2rem 1.4rem; border-left:5px solid var(--c); }}
 .tipbox b {{ display:block; font-family:'Fraunces',serif; font-size:1.05rem; margin-bottom:.25rem; }}
+/* suasana halaman detail */
+.d-head {{ position:relative; }}
+.d-mark {{ position:absolute; right:-20px; top:-50px; width:230px; opacity:.14; pointer-events:none;
+  animation: mark-turn 40s linear infinite; }}
+@keyframes mark-turn {{ to {{ transform: rotate(360deg); }} }}
+@media (prefers-reduced-motion: reduce) {{ .d-mark {{ animation:none; }} }}
+.d-mood {{ color:var(--c); font-size:.95rem; font-style:italic; margin-bottom:.2rem; position:relative; }}
+.d-name, .d-latin, .d-sum, .facts {{ position:relative; }}
+.funfact {{ margin-top:.9rem; border-radius:20px; padding:1.1rem 1.4rem; background:linear-gradient(120deg, white, transparent);
+  border:1px dashed var(--c); }}
+.funfact b {{ display:block; font-family:'Fraunces',serif; font-size:1.05rem; margin-bottom:.25rem; color:var(--c); }}
 .more-h {{ font-family:'Fraunces',serif; font-size:1.4rem; margin:2.6rem 0 .8rem; }}
 @media (max-width: 700px) {{
   .care-row {{ grid-template-columns:1fr; gap:.4rem; }}
@@ -537,6 +549,8 @@ def render_home():
 
 def render_detail(name):
     f = FLOWERS[name]
+    t = THEME[name]
+    st.markdown(theme_css(name, PAPER), unsafe_allow_html=True)
     st.markdown('<a class="back" href="?" target="_self">‹ Semua bunga</a>', unsafe_allow_html=True)
     st.write("")
     left, right = st.columns([1, 1.1], gap="large")
@@ -546,7 +560,10 @@ def render_detail(name):
     with right:
         facts = "".join(f'<div class="fact"><div class="k">{k}</div><div class="v">{v}</div></div>'
                         for k, v in f["facts"].items())
-        st.markdown(f"""<div style="--c:{f['color']}">
+        mark = base64.b64encode(illustration(name, bare=True).encode()).decode()
+        st.markdown(f"""<div class="d-head" style="--c:{f['color']}">
+<img class="d-mark" src="data:image/svg+xml;base64,{mark}" alt="">
+<div class="d-mood">{t['mood']}</div>
 <div class="d-name">{f['local']}</div>
 <div class="d-latin"><i>{f['latin']}</i> &nbsp;·&nbsp; {name} &nbsp;·&nbsp; famili {f['family']}</div>
 <div class="d-sum">{f['summary']}</div>
@@ -554,7 +571,8 @@ def render_detail(name):
 
     care = "".join(f'<div class="care-row"><h4>{k}</h4><p>{v}</p></div>' for k, v in f["care"].items())
     st.markdown(f'<div class="care" style="--c:{f["color"]}"><h2>Saran perawatan</h2>{care}'
-                f'<div class="tipbox"><b>Perlu diketahui</b>{f["tip"]}</div></div>', unsafe_allow_html=True)
+                f'<div class="tipbox"><b>Perlu diketahui</b>{f["tip"]}</div>'
+                f'<div class="funfact"><b>Tahukah Anda?</b>{t["fact"]}</div></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="more-h">Bunga lainnya</div><div class="strip">' +
                 "".join(card_html(n, small=True) for n in ORDER if n != name) + "</div>", unsafe_allow_html=True)
@@ -589,11 +607,11 @@ PHOTO_GUIDE = f"""
 <div class="guide">
   <div class="guide-item">
     {_frame(True)}
-    <div><b class="ok">Begini</b><span>Satu bunga, dekat, memenuhi bingkai. Cahaya cukup dan tidak buram.</span></div>
+    <div><b class="ok">Disarankan</b><span>Foto jarak dekat satu kuntum bunga yang memenuhi bingkai, dengan pencahayaan cukup dan fokus yang tajam.</span></div>
   </div>
   <div class="guide-item">
     {_frame(False)}
-    <div><b class="no">Bukan begini</b><span>Satu tanaman utuh atau buket dari jauh. Bunganya jadi terlalu kecil untuk dikenali.</span></div>
+    <div><b class="no">Kurang disarankan</b><span>Foto seluruh tanaman atau rangkaian bunga dari jarak jauh, sehingga bunga tampak terlalu kecil untuk dikenali.</span></div>
   </div>
 </div>
 """
