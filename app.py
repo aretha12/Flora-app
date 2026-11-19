@@ -129,7 +129,8 @@ h1, h2, h3 {{ font-family: 'Fraunces', serif !important; color: {INK}; font-weig
 
 # ─────────────────────────── Model ───────────────────────────
 @st.cache_resource(show_spinner=False)
-def get_model(blob: bytes | None, path: str | None):
+def get_model(blob: bytes | None, path: str | None, version: str = ""):
+    # `version` (ukuran + waktu ubah file) membuat cache ikut diperbarui saat flower_cnn.pth diganti
     src = io.BytesIO(blob) if blob else path
     return load_checkpoint(src, DEVICE)
 
@@ -188,7 +189,8 @@ def page_identify():
         if up_weights is not None:
             model, classes, meta = get_model(up_weights.getvalue(), None)
         elif DEFAULT_WEIGHTS.exists():
-            model, classes, meta = get_model(None, str(DEFAULT_WEIGHTS))
+            st_ = DEFAULT_WEIGHTS.stat()
+            model, classes, meta = get_model(None, str(DEFAULT_WEIGHTS), f"{st_.st_size}-{st_.st_mtime_ns}")
     except Exception as e:  # noqa: BLE001
         load_error = str(e)
 
