@@ -228,10 +228,27 @@ torch.save({
 
     # ─────────────────────────── Tab 1: satu foto ───────────────────────────
     with tab_one:
-        src = st.radio("Sumber foto", ["Unggah", "Kamera"], horizontal=True, label_visibility="collapsed")
+        src = st.radio("Sumber foto", ["Unggah", "Tempel (Ctrl+V)", "Kamera"], horizontal=True,
+                       label_visibility="collapsed")
         st.markdown(PHOTO_GUIDE, unsafe_allow_html=True)
-        file = (st.file_uploader("Pilih foto bunga", type=["jpg", "jpeg", "png", "webp"], key="single")
-                if src == "Unggah" else st.camera_input("Ambil foto bunga"))
+        if src == "Unggah":
+            file = st.file_uploader("Pilih foto bunga", type=["jpg", "jpeg", "png", "webp"], key="single")
+        elif src == "Kamera":
+            file = st.camera_input("Ambil foto bunga")
+        else:
+            st.markdown('<div class="paste-hint">Salin foto (dari web, chat, atau screenshot), klik kotak di bawah, '
+                        'tekan <kbd>Ctrl</kbd>+<kbd>V</kbd>, lalu tekan <kbd>Enter</kbd>.</div>', unsafe_allow_html=True)
+            with st.container(key="pastebox"):
+                pasted = st.chat_input("Klik di sini, lalu Ctrl+V untuk menempel foto", key="paste",
+                                       accept_file=True, file_type=["jpg", "jpeg", "png", "webp"])
+            if pasted is not None and getattr(pasted, "files", None):
+                f0 = pasted.files[0]
+                st.session_state.pasted = (f0.getvalue(), f0.name or "tempelan.png")
+            file = None
+            if st.session_state.get("pasted"):
+                data, name = st.session_state.pasted
+                file = io.BytesIO(data)
+                file.name, file.size = name, len(data)
 
         if file is None:
             st.markdown('<div class="empty"><div class="big">Mulai dengan satu foto</div>'
@@ -621,6 +638,34 @@ header[data-testid="stHeader"] {{ background: transparent; }}
 {_petal_layer()}
 """, unsafe_allow_html=True)
 
+
+def _sprig(side: str) -> str:
+    """Gambar garis tangkai berdaun dengan satu bunga, gaya botani minimalis."""
+    stem = "#7E9A86"
+    if side == "left":
+        leaves = [(78, 300, -38, 1), (84, 230, 34, -1), (76, 160, -30, 1), (82, 100, 28, -1)]
+        head_y, head_c = 52, PETAL["Rose"]
+        path = "M90 520 C 86 420, 70 330, 82 240 S 92 110, 84 60"
+    else:
+        leaves = [(92, 330, 36, -1), (86, 260, -32, 1), (94, 190, 30, -1), (88, 130, -26, 1)]
+        head_y, head_c = 80, PETAL["Marigold"]
+        path = "M84 520 C 92 430, 104 350, 94 260 S 82 140, 92 88"
+    leaf_svg = "".join(
+        f'<path d="M{x} {y} q {d*34} -14 {d*58} {-6 if d>0 else -6} q {-d*30} 18 {-d*58} 6 z" '
+        f'fill="none" stroke="{stem}" stroke-width="1.6" transform="rotate({a} {x} {y})"/>'
+        f'<path d="M{x} {y} l {d*50} -4" stroke="{stem}" stroke-width="1" opacity=".7" transform="rotate({a} {x} {y})"/>'
+        for x, y, a, d in leaves)
+    hx = 84 if side == "left" else 92
+    petals = "".join(
+        f'<ellipse cx="{hx}" cy="{head_y - 15}" rx="7" ry="14" fill="{head_c}" fill-opacity=".22" '
+        f'stroke="{head_c}" stroke-width="1.3" transform="rotate({a} {hx} {head_y})"/>' for a in range(0, 360, 60))
+    return (f'<svg class="sprig {side}" viewBox="0 0 180 520" aria-hidden="true">'
+            f'<path d="{path}" fill="none" stroke="{stem}" stroke-width="2" stroke-linecap="round"/>'
+            f'{leaf_svg}{petals}<circle cx="{hx}" cy="{head_y}" r="5" fill="{head_c}" fill-opacity=".6"/></svg>')
+
+
+st.markdown(_sprig("left") + _sprig("right"), unsafe_allow_html=True)
+
 # ─────────────────────────── Navigasi ───────────────────────────
 PAGES = {
     "katalog": st.Page(page_catalog, title="Katalog bunga", url_path="katalog", default=True),
@@ -629,11 +674,28 @@ PAGES = {
 nav = st.navigation(list(PAGES.values()), position="hidden")
 
 st.markdown("""<style>
-.st-key-topnav { gap:.3rem; background:#E6ECE4; padding:.3rem; border-radius:14px; width:fit-content; margin-left:auto; }
-.st-key-topnav [data-testid="stPageLink"] a { border-radius:10px; padding:.25rem .9rem; }
-.st-key-topnav [data-testid="stPageLink"] a[aria-current="page"],
-.st-key-topnav [data-testid="stPageLink-NavLink"][aria-current="page"] { background:white; box-shadow:0 1px 2px rgba(30,43,36,.08); }
-.st-key-topnav p { font-weight:500; }
+.st-key-topnav { gap:.25rem; background:rgba(255,255,255,.55); border:1px solid #DCE3DB; padding:.3rem;
+  border-radius:999px; width:fit-content; margin-left:auto; backdrop-filter: blur(6px); }
+.st-key-topnav [data-testid="stPageLink"] a { border-radius:999px 999px 999px 4px; padding:.3rem 1rem .3rem .8rem;
+  transition: background .2s ease; }
+.st-key-topnav [data-testid="stPageLink"] a:hover { background:rgba(47,93,70,.07); }
+.st-key-topnav [data-testid="stPageLink"] a:focus-visible { outline:2px solid #2F5D46; outline-offset:2px; }
+.st-key-topnav p { font-weight:500; color:#4A5A50; }
+.st-key-topnav [data-testid="stIconMaterial"], .st-key-topnav span[data-testid*="Icon"] { color:#7A8C80; }
+
+.paste-hint { color:#66746B; font-size:.92rem; margin:.1rem 0 .5rem; }
+.paste-hint kbd { background:white; border:1px solid #DCE3DB; border-bottom-width:2px; border-radius:6px;
+  padding:0 .35rem; font-size:.82rem; font-family:inherit; }
+.st-key-pastebox [data-testid="stChatInput"] { border:1.5px dashed #B9C6B8; border-radius:18px; background:white; }
+
+/* Hiasan tangkai di kiri & kanan, hanya di layar lebar */
+.sprig { position:fixed; bottom:-10px; width:170px; pointer-events:none; z-index:0; opacity:.55;
+  transform-origin: 50% 100%; animation: sprig-sway 9s ease-in-out infinite alternate; }
+.sprig.left { left:max(8px, calc((100vw - 1120px) / 2 - 210px)); }
+.sprig.right { right:max(8px, calc((100vw - 1120px) / 2 - 210px)); animation-duration: 11s; animation-delay:-4s; }
+@keyframes sprig-sway { from { transform: rotate(-1.6deg); } to { transform: rotate(1.6deg); } }
+@media (max-width: 1360px) { .sprig { display:none; } }
+@media (prefers-reduced-motion: reduce) { .sprig { animation:none; } }
 </style>""", unsafe_allow_html=True)
 
 b, n = st.columns([1.3, 1], vertical_alignment="center")
@@ -642,7 +704,11 @@ b.markdown(
     '<div class="petals" style="margin-bottom:0">' + "".join(f'<i style="background:{c}"></i>' for c in PETAL.values()) + "</div>",
     unsafe_allow_html=True)
 with n.container(horizontal=True, key="topnav"):
-    st.page_link(PAGES["katalog"], label="Katalog bunga")
-    st.page_link(PAGES["kenali"], label="Kenali dari foto")
+    st.page_link(PAGES["katalog"], label="Katalog bunga", icon=":material/local_florist:")
+    st.page_link(PAGES["kenali"], label="Kenali dari foto", icon=":material/photo_camera:")
+_active = 2 if getattr(nav, "url_path", "") == "kenali" else 1
+st.markdown(f"<style>.st-key-topnav > div:nth-child({_active}) a {{ background:white; "
+            f"box-shadow:0 1px 3px rgba(30,43,36,.10); }} .st-key-topnav > div:nth-child({_active}) a * "
+            f"{{ color:{LEAF} !important; }}</style>", unsafe_allow_html=True)
 st.write("")
 nav.run()
