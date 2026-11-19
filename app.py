@@ -282,6 +282,11 @@ torch.save({
 
                 st.plotly_chart(prob_chart(probs, classes), use_container_width=True, config={"displayModeBar": False})
                 st.caption(f"{img.width}×{img.height}px · diproses dalam {ms:.0f} ms" + (" dengan TTA" if use_tta else ""))
+                with st.expander("Kapan hasilnya bisa meleset?"):
+                    st.markdown("Model dilatih dari ±2.000 foto: foto kebun ditambah foto beragam dari dataset Oxford 102 Flowers "
+                                "dan TensorFlow flower_photos. Krisan di data latihan masih didominasi warna putih, jadi krisan "
+                                "berwarna lain, bunga yang bukan salah satu dari kelima jenis ini, atau foto yang buram "
+                                "bisa ditebak salah, bahkan dengan angka keyakinan tinggi.")
 
 
     # ─────────────────────────── Tab 2: banyak foto ───────────────────────────
@@ -410,7 +415,7 @@ torch.save({
                               paper_bgcolor="rgba(0,0,0,0)", font=dict(family="Plus Jakarta Sans", color=INK),
                               xaxis=dict(visible=False), yaxis=dict(autorange="reversed"))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-            st.caption(f"{sum(ds.values()):,} foto, diperkecil ke 128×128 px.".replace(",", "."))
+            st.caption(f"{sum(ds.values()):,} foto (asli + tambahan), diperkecil ke 128×128 px.".replace(",", "."))
 
         with st.expander("Arsitektur & konfigurasi training"):
             st.markdown("""

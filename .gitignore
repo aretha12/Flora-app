@@ -10,3 +10,9 @@ Untitled-1.ipynb
 __pycache__/
 __MACOSX/
 *.tar
+
+# Data tambahan (dibuat oleh tambah_data.py)
+_download/
+resized_data_plus/
+jalankan_tambah_data.ipynb
+.vscode/
