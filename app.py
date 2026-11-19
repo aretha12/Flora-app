@@ -231,6 +231,7 @@ torch.save({
         src = st.radio("Sumber foto", ["Unggah", "Kamera"], horizontal=True, label_visibility="collapsed")
         file = (st.file_uploader("Pilih foto bunga", type=["jpg", "jpeg", "png", "webp"], key="single")
                 if src == "Unggah" else st.camera_input("Ambil foto bunga"))
+        st.caption("Tips: pakai foto close-up satu bunga yang memenuhi bingkai, dengan cahaya cukup. Foto satu tanaman utuh atau buket dari jauh lebih sering ditebak salah.")
 
         if file is None:
             st.markdown('<div class="empty"><div class="big">Mulai dengan satu foto</div>'
@@ -285,9 +286,9 @@ torch.save({
                 st.plotly_chart(prob_chart(probs, classes), use_container_width=True, config={"displayModeBar": False})
                 st.caption(f"{img.width}×{img.height}px · diproses dalam {ms:.0f} ms" + (" dengan TTA" if use_tta else ""))
                 with st.expander("Kapan hasilnya bisa meleset?"):
-                    st.markdown("Model dilatih dari ±2.000 foto: foto kebun ditambah foto beragam dari dataset Oxford 102 Flowers "
-                                "dan TensorFlow flower_photos. Krisan di data latihan masih didominasi warna putih, jadi krisan "
-                                "berwarna lain, bunga yang bukan salah satu dari kelima jenis ini, atau foto yang buram "
+                    st.markdown("Model dilatih dari ±3.600 foto: foto kebun asli ditambah foto beragam dari iNaturalist, Oxford 102 Flowers, "
+                                "dan TensorFlow flower_photos. Pada foto dunia nyata yang belum pernah dilihatnya, model benar sekitar "
+                                "2 dari 3 kali. Foto satu tanaman utuh dari jauh, bunga di luar kelima jenis ini, atau foto buram "
                                 "bisa ditebak salah, bahkan dengan angka keyakinan tinggi.")
 
 
