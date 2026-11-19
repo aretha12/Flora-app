@@ -1,0 +1,12 @@
+# Dataset besar: tidak perlu di-upload, aplikasi cukup pakai assets/ dan flower_cnn.pth
+orginal data/
+resized_data/
+
+# File lain yang tidak dipakai aplikasi
+best_cnn.pth
+cnn_dl.ipynb
+cnn_dl_improvedd.ipynb
+Untitled-1.ipynb
+__pycache__/
+__MACOSX/
+*.tar
