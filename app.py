@@ -229,9 +229,9 @@ torch.save({
     # ─────────────────────────── Tab 1: satu foto ───────────────────────────
     with tab_one:
         src = st.radio("Sumber foto", ["Unggah", "Kamera"], horizontal=True, label_visibility="collapsed")
+        st.markdown(PHOTO_GUIDE, unsafe_allow_html=True)
         file = (st.file_uploader("Pilih foto bunga", type=["jpg", "jpeg", "png", "webp"], key="single")
                 if src == "Unggah" else st.camera_input("Ambil foto bunga"))
-        st.caption("Tips: pakai foto close-up satu bunga yang memenuhi bingkai, dengan cahaya cukup. Foto satu tanaman utuh atau buket dari jauh lebih sering ditebak salah.")
 
         if file is None:
             st.markdown('<div class="empty"><div class="big">Mulai dengan satu foto</div>'
@@ -550,6 +550,76 @@ def page_catalog():
     else:
         render_home()
 
+
+
+# ─────────────────────────── Panduan foto ───────────────────────────
+def _frame(good: bool) -> str:
+    """Ilustrasi kecil: satu bunga besar memenuhi bingkai vs. banyak bunga kecil dari jauh."""
+    if good:
+        petals = "".join(
+            f'<ellipse cx="40" cy="22" rx="11" ry="17" fill="#C8305F" opacity=".9" transform="rotate({a} 40 40)"/>'
+            for a in range(0, 360, 60))
+        body = petals + '<circle cx="40" cy="40" r="8" fill="#F3C64B"/>'
+    else:
+        dots = [(18, 50), (30, 44), (44, 52), (56, 46), (26, 58), (50, 60), (38, 38), (62, 56)]
+        body = ('<rect x="10" y="40" width="60" height="30" rx="6" fill="#5E8C6A" opacity=".55"/>'
+                + "".join(f'<circle cx="{x}" cy="{y}" r="3.2" fill="#D9A21B"/>' for x, y in dots))
+    return (f'<svg viewBox="0 0 80 80" width="64" height="64" aria-hidden="true">'
+            f'<rect x="1" y="1" width="78" height="78" rx="12" fill="#F2F5F0" stroke="#DCE3DB"/>{body}</svg>')
+
+
+PHOTO_GUIDE = f"""
+<div class="guide">
+  <div class="guide-item">
+    {_frame(True)}
+    <div><b class="ok">Begini</b><span>Satu bunga, dekat, memenuhi bingkai. Cahaya cukup dan tidak buram.</span></div>
+  </div>
+  <div class="guide-item">
+    {_frame(False)}
+    <div><b class="no">Bukan begini</b><span>Satu tanaman utuh atau buket dari jauh. Bunganya jadi terlalu kecil untuk dikenali.</span></div>
+  </div>
+</div>
+"""
+
+
+# ─────────────────────────── Latar: kelopak melayang ───────────────────────────
+def _petal_layer() -> str:
+    import random as _r
+    rng = _r.Random(7)
+    cols = list(PETAL.values())
+    items = []
+    for i in range(14):
+        size = rng.randint(14, 30)
+        items.append(
+            f'<i style="left:{rng.uniform(2, 96):.1f}vw; width:{size}px; height:{size // 2}px; '
+            f'background:{cols[i % len(cols)]}; animation-duration:{rng.uniform(22, 38):.1f}s, {rng.uniform(5, 9):.1f}s; '
+            f'animation-delay:-{rng.uniform(0, 38):.1f}s, -{rng.uniform(0, 9):.1f}s;"></i>')
+    return '<div class="petal-sky" aria-hidden="true">' + "".join(items) + "</div>"
+
+
+st.markdown(f"""
+<style>
+.petal-sky {{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }}
+.petal-sky i {{ position:absolute; top:-6vh; display:block; border-radius:100% 0 100% 0; opacity:.2;
+  animation-name: petal-fall, petal-sway; animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite; animation-direction: normal, alternate; }}
+@keyframes petal-fall {{ from {{ transform: translateY(0) rotate(0deg); }} to {{ transform: translateY(112vh) rotate(320deg); }} }}
+@keyframes petal-sway {{ from {{ margin-left:-28px; }} to {{ margin-left:28px; }} }}
+@media (prefers-reduced-motion: reduce) {{ .petal-sky {{ display:none; }} }}
+[data-testid="stMain"], [data-testid="stSidebar"], header {{ position:relative; z-index:1; }}
+header[data-testid="stHeader"] {{ background: transparent; }}
+.stApp {{ background: radial-gradient(1200px 600px at 100% 0%, #E7EEE4 0%, transparent 60%), {PAPER}; }}
+
+.guide {{ display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin:.2rem 0 .9rem; }}
+.guide-item {{ display:flex; gap:.85rem; align-items:center; background:white; border-radius:16px; padding:.75rem .9rem; }}
+.guide-item b {{ display:block; font-size:.95rem; margin-bottom:.1rem; }}
+.guide-item b.ok {{ color:{LEAF}; }}
+.guide-item b.no {{ color:#B8233A; }}
+.guide-item span {{ color:{MUTED}; font-size:.88rem; line-height:1.45; }}
+@media (max-width: 700px) {{ .guide {{ grid-template-columns:1fr; }} }}
+</style>
+{_petal_layer()}
+""", unsafe_allow_html=True)
 
 # ─────────────────────────── Navigasi ───────────────────────────
 PAGES = {
