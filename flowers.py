@@ -42,6 +42,19 @@ FLOWERS = {
                    "pagar hidup maupun pot di teras.",
         "facts": {"Cahaya": "Matahari penuh", "Air": "Banyak", "Suhu ideal": "24–32 °C",
                   "Media": "Subur, porous"},
+        "location": {
+            "recommended": [
+                "Taman terbuka dengan sinar matahari langsung",
+                 "Pinggiran taman dan pembatas tanaman",
+                 "Pot di halaman rumah",
+                "Kebun sayur sebagai tanaman pendamping tomat dan cabai"
+            ],
+            "notes": [
+                "Hindari area yang sering tergenang air",
+                "Pastikan tanaman mendapat sinar matahari cukup",
+                "Gunakan media tanam dengan drainase baik"
+            ]
+        },
         "care": {
             "Penyiraman": "Jaga tanah tetap lembap tapi tidak becek. Di musim kemarau siram setiap hari, terutama "
                           "untuk tanaman dalam pot.",

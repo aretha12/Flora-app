@@ -612,7 +612,19 @@ def render_detail(name):
 <div class="d-latin"><i>{f['latin']}</i> &nbsp;·&nbsp; {name} &nbsp;·&nbsp; famili {f['family']}</div>
 <div class="d-sum">{f['summary']}</div>
 <div class="facts">{facts}</div></div>""", unsafe_allow_html=True)
+    
+    location = f.get("location", {})
 
+    if location:
+        st.markdown("### 📍 Rekomendasi Lokasi Penanaman")
+
+        st.markdown("**Tempat yang direkomendasikan:**")
+        for place in location.get("recommended", []):
+            st.markdown(f"- {place}")
+
+        st.markdown("**Hal yang perlu diperhatikan:**")
+        for note in location.get("notes", []):
+            st.markdown(f"- {note}")
     care = "".join(f'<div class="care-row"><h4>{k}</h4><p>{v}</p></div>' for k, v in f["care"].items())
     st.markdown(f'<div class="care" style="--c:{f["color"]}"><h2>Saran perawatan</h2>{care}'
                 f'<div class="tipbox"><b>Perlu diketahui</b>{f["tip"]}</div>'
