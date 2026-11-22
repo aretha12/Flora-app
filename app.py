@@ -20,7 +20,7 @@ DEFAULT_WEIGHTS = APP_DIR / "flower_cnn.pth"
 SAMPLES_DIR = APP_DIR / "assets" / "samples"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-st.set_page_config(page_title="Flora · Pengenal Bunga", page_icon="🌸", layout="wide",
+st.set_page_config(page_title="Bloomora · Pengenal Bunga", page_icon="🌸", layout="wide",
                    initial_sidebar_state="collapsed")
 
 
@@ -402,7 +402,7 @@ torch.save({
                          column_config={"Keyakinan": st.column_config.ProgressColumn("Keyakinan", format="%.1f%%",
                                                                                     min_value=0, max_value=100)})
             a, b, _ = st.columns([1, 1, 3])
-            a.download_button("Unduh riwayat", hdf.to_csv(index=False).encode(), "riwayat_flora.csv", "text/csv")
+            a.download_button("Unduh riwayat", hdf.to_csv(index=False).encode(), "riwayat_bloomora.csv", "text/csv")
             if b.button("Hapus riwayat"):
                 st.session_state.history = []
                 st.session_state.pop("last_logged", None)
@@ -577,7 +577,7 @@ def card_html(name, small=False):
 
 def render_home():
     st.markdown('<div class="intro">Pilih bunga untuk melihat cara merawatnya</div>'
-                '<div class="lede">Lima bunga yang dikenali model Flora. Geser ke samping untuk melihat semuanya, '
+                '<div class="lede">Lima bunga yang dikenali model Bloomora. Geser ke samping untuk melihat semuanya, '
                 'lalu klik salah satu untuk membuka panduan perawatannya.</div>', unsafe_allow_html=True)
     st.markdown('<div class="strip">' + "".join(card_html(n) for n in ORDER) + "</div>", unsafe_allow_html=True)
 
@@ -659,7 +659,7 @@ def _first_layer_maps(model, img, n=8):
 
 def page_howto():
     st.markdown("## Cara kerja model")
-    st.markdown('<div class="lede">Flora memakai jaringan saraf konvolusi (CNN) yang dibangun dan dilatih sendiri. '
+    st.markdown('<div class="lede">Bloomora memakai jaringan saraf konvolusi (CNN) yang dibangun dan dilatih sendiri. '
                 'Berikut perjalanan sebuah foto hingga menjadi tebakan nama bunga.</div>', unsafe_allow_html=True)
 
     steps = [
@@ -865,7 +865,7 @@ st.markdown("""<style>
 
 b, n = st.columns([1, 1.25], vertical_alignment="center")
 b.markdown(
-    '<div class="brand"><div class="logo">Flora</div><span>Katalog bunga dan cara merawatnya</span></div>'
+    '<div class="brand"><div class="logo">Bloomora</div><span>Katalog bunga dan cara merawatnya</span></div>'
     '<div class="petals" style="margin-bottom:0">' + "".join(f'<i style="background:{c}"></i>' for c in PETAL.values()) + "</div>",
     unsafe_allow_html=True)
 with n.container(horizontal=True, key="topnav"):
