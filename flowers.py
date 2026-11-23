@@ -18,6 +18,18 @@ FLOWERS = {
                    "tinggi yang sejuk seperti Cipanas, Bandungan, dan Berastagi.",
         "facts": {"Cahaya": "Matahari penuh, 6 jam+", "Air": "Sedang", "Suhu ideal": "18–26 °C",
                   "Media": "Gembur, pH 6–6,5"},
+        "location": {
+            "recommended": [
+                "Taman terbuka di dataran tinggi dengan udara sejuk",
+                "Bedengan bunga yang mendapat sinar matahari cukup",
+                "Pot besar di halaman atau area luar rumah"
+            ],
+            "notes": [
+                "Pilih lokasi dengan suhu relatif sejuk",
+                "Pastikan tanaman mendapat sinar matahari sekitar 6 jam atau lebih",
+                "Jaga jarak antar tanaman agar sirkulasi udara tetap baik"
+            ]
+        },
         "care": {
             "Penyiraman": "Siram saat permukaan tanah mulai kering, langsung ke pangkal batang. Hindari membasahi daun "
                           "di sore hari karena memicu jamur.",
@@ -46,8 +58,8 @@ FLOWERS = {
             "recommended": [
                 "Taman terbuka dengan sinar matahari langsung",
                  "Pinggiran taman dan pembatas tanaman",
-                 "Pot di halaman rumah",
-                "Kebun sayur sebagai tanaman pendamping tomat dan cabai"
+                 "Pot besar di halaman atau teras yang terkena sinar matahari",
+                "Area taman tropis sebagai tanaman hias atau pagar hidup"
             ],
             "notes": [
                 "Hindari area yang sering tergenang air",
@@ -79,6 +91,18 @@ FLOWERS = {
                    "dari biji dan berbunga cepat.",
         "facts": {"Cahaya": "Matahari penuh", "Air": "Sedikit–sedang", "Suhu ideal": "20–30 °C",
                   "Media": "Porous, tidak becek"},
+        "location": {
+            "recommended": [
+                "Taman terbuka atau bedengan yang mendapat sinar matahari penuh",
+                "Pinggiran kebun sayur sebagai tanaman pendamping",
+                "Pot di halaman atau balkon yang terkena matahari"
+            ],
+            "notes": [
+                "Pilih lokasi dengan paparan sinar matahari langsung",
+                "Hindari tanah yang terlalu basah atau sering tergenang",
+                "Sisakan ruang antar tanaman agar sirkulasi udara baik"
+            ]
+        },
         "care": {
             "Penyiraman": "Siram di pangkal batang saat tanah kering. Setelah tanaman kuat, gemitir cukup tahan "
                           "kering; yang lebih berbahaya justru tanah yang terus basah.",
@@ -103,6 +127,18 @@ FLOWERS = {
                    "udara sejuk, namun tetap bisa tumbuh di dataran rendah.",
         "facts": {"Cahaya": "Matahari pagi 5–6 jam", "Air": "Sedang", "Suhu ideal": "16–28 °C",
                   "Media": "Ringan, banyak kompos"},
+        "location": {
+            "recommended": [
+                "Pot gantung di teras atau balkon",
+                "Pot biasa di area yang mendapat sinar matahari pagi",
+                "Pinggiran taman atau bedengan bunga dengan drainase baik"
+            ],
+            "notes": [
+                "Utamakan sinar matahari pagi",
+                "Di daerah panas, beri naungan pada siang hingga sore hari",
+                "Gunakan pot berlubang atau tanah dengan drainase baik"
+            ]
+        },
         "care": {
             "Penyiraman": "Siram saat 2–3 cm tanah teratas kering. Arahkan air ke tanah, bukan ke bunga, karena "
                           "kelopaknya mudah rusak dan membusuk bila sering basah.",
@@ -126,6 +162,18 @@ FLOWERS = {
                    "berbunga sepanjang tahun di iklim tropis bila dirawat rutin.",
         "facts": {"Cahaya": "Matahari pagi 6 jam+", "Air": "Sedang–banyak", "Suhu ideal": "18–28 °C",
                   "Media": "Subur, pH 6–6,5"},
+        "location": {
+            "recommended": [
+                "Taman terbuka atau bedengan bunga dengan sinar matahari pagi",
+                "Pot besar di halaman atau teras yang memiliki sirkulasi udara baik",
+                "Area taman dengan ruang cukup untuk pertumbuhan semak mawar"
+            ],
+            "notes": [
+                "Usahakan tanaman mendapat sinar matahari pagi sekitar 6 jam",
+                "Pilih lokasi dengan sirkulasi udara yang baik",
+                "Hindari area yang terlalu lembap atau sering tergenang air"
+            ]
+        },
         "care": {
             "Penyiraman": "Siram dalam 2–3 kali seminggu di pagi hari, langsung ke tanah. Daun yang basah "
                           "semalaman mudah terserang bercak hitam.",
